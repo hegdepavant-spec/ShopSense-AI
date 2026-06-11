@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>ShopSense AI</title>
+<style>
+:root{
+  --bg:#0b0d12;--panel:#121620;--panel2:#171c28;--line:#273044;--text:#f4f7fb;
+  --muted:#9aa7bb;--accent:#ff6b35;--blue:#4da3ff;--green:#38d996;--gold:#ffd166;--bad:#ff6b6b;
+}
+*{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,Segoe UI,Arial,sans-serif}
+a{color:inherit} button,input{font:inherit}
+.shell{min-height:100vh;display:grid;grid-template-rows:auto 1fr}
+header{position:sticky;top:0;z-index:5;background:#0b0d12e8;border-bottom:1px solid var(--line);backdrop-filter:blur(14px)}
+.bar{max-width:1440px;margin:0 auto;padding:16px 22px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.brand{font-weight:900;letter-spacing:.2px;font-size:20px}.brand span{color:var(--accent)}
+.status{font-size:12px;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:6px 10px}
+main{max-width:1440px;width:100%;margin:0 auto;padding:22px;display:grid;grid-template-columns:380px 1fr 360px;gap:18px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:8px;min-width:0}
+.left,.assistant{align-self:start;position:sticky;top:76px}
+.pad{padding:18px}.eyebrow{font-size:12px;text-transform:uppercase;letter-spacing:.12em;color:var(--accent);font-weight:800}
+h1{font-size:30px;line-height:1.05;margin:12px 0 10px;letter-spacing:-.03em}.sub{color:var(--muted);line-height:1.55;margin:0 0 18px}
+.tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+.tab{border:1px solid var(--line);background:var(--panel2);color:var(--muted);border-radius:7px;padding:10px;cursor:pointer}
+.tab.on{background:var(--accent);border-color:var(--accent);color:white;font-weight:800}
+.field{display:none}.field.on{display:block}
+input[type=text],input[type=url]{width:100%;background:#0e121a;color:var(--text);border:1px solid var(--line);border-radius:7px;padding:12px 13px;outline:none}
+input:focus{border-color:var(--blue);box-shadow:0 0 0 3px #4da3ff22}
+.primary{width:100%;margin-top:10px;border:0;background:var(--accent);color:white;border-radius:7px;padding:12px 14px;font-weight:900;cursor:pointer}
+.primary:disabled{opacity:.55;cursor:not-allowed}
+.drop{border:1px dashed #46536c;border-radius:8px;padding:26px;text-align:center;color:var(--muted);cursor:pointer;background:#0e121a}
+.drop.drag{border-color:var(--accent);background:#ff6b3512}
+.preview{display:none;align-items:center;gap:10px;margin-top:10px}.preview img{width:64px;height:64px;object-fit:cover;border-radius:7px;border:1px solid var(--line)}
+.ghost{border:1px solid var(--line);background:transparent;color:var(--muted);border-radius:7px;padding:8px 10px;cursor:pointer}
+.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px}
+.metric{background:#0e121a;border:1px solid var(--line);border-radius:7px;padding:10px}.metric b{display:block;margin-top:4px}.metric span{font-size:11px;color:var(--muted)}
+.results{min-width:0}.topline{display:flex;align-items:end;justify-content:space-between;gap:12px;margin-bottom:14px}
+.title{font-size:22px;font-weight:900}.meta{color:var(--muted);font-size:13px;margin-top:4px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:8px;overflow:hidden;display:flex;flex-direction:column;min-height:430px}
+.image{height:190px;background:#0e121a;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:center}.image img{width:100%;height:100%;object-fit:contain;padding:12px}
+.body{padding:14px;display:flex;flex-direction:column;gap:10px;flex:1}.row{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.badge{font-size:11px;text-transform:uppercase;letter-spacing:.08em;border:1px solid var(--line);border-radius:999px;padding:5px 8px;color:var(--muted)}
+.best{border-color:#ffd16666;color:var(--gold)}.original{border-color:#38d99666;color:var(--green)}
+.name{font-weight:850;line-height:1.35;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.price{font-size:22px;font-weight:950}.small{font-size:13px;color:var(--muted)}
+.scores{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}.score{background:#0e121a;border:1px solid var(--line);border-radius:7px;padding:8px;font-size:12px}.score b{display:block;color:var(--text);margin-top:2px}
+.view{margin-top:auto;text-align:center;text-decoration:none;background:var(--blue);color:white;border-radius:7px;padding:10px;font-weight:900}
+.compare{margin-top:16px;overflow:auto}.compare table{width:100%;border-collapse:collapse;background:var(--panel);border:1px solid var(--line);border-radius:8px;overflow:hidden}
+th,td{text-align:left;padding:10px;border-bottom:1px solid var(--line);font-size:13px}th{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.08em}
+.chatlog{height:430px;overflow:auto;display:flex;flex-direction:column;gap:10px;padding:14px;background:#0e121a;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.msg{padding:10px 12px;border-radius:8px;line-height:1.45;font-size:14px;white-space:pre-wrap}.user{background:#20304a;align-self:flex-end}.bot{background:var(--panel2);align-self:flex-start}
+.chatbox{display:flex;gap:8px;padding:12px}.chatbox input{flex:1}.chatbox button{width:auto;margin:0;padding:10px 13px}
+.empty,.error{padding:34px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:8px;background:#121620}
+.error{color:#ffc2c2;border-color:#ff6b6b55}.loader{display:none;padding:34px;text-align:center;color:var(--muted)}.spin{width:38px;height:38px;border:3px solid var(--line);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 14px}@keyframes spin{to{transform:rotate(360deg)}}
+@media(max-width:1120px){main{grid-template-columns:360px 1fr}.assistant{position:static;grid-column:1/-1}}@media(max-width:760px){main{grid-template-columns:1fr;padding:14px}.left{position:static}.topline{align-items:start;flex-direction:column}.bar{padding:14px}.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="shell">
+  <header><div class="bar"><div class="brand">ShopSense<span>AI</span></div><div class="status">Google Shopping live data only</div></div></header>
+  <main>
+    <section class="panel left">
+      <div class="pad">
+        <div class="eyebrow">Visual shopping assistant</div>
+        <h1>Find the same product and the best real-time deal.</h1>
+        <p class="sub">Upload a product photo, paste a product URL, or type a search. Results come from SerpAPI Google Shopping and direct product links open in a new tab.</p>
+        <div class="tabs">
+          <button class="tab on" data-tab="image">Image</button>
+          <button class="tab" data-tab="url">URL</button>
+          <button class="tab" data-tab="query">Query</button>
+        </div>
+        <div class="field on" id="field-image">
+          <div class="drop" id="drop">Click or drag image here<br><span class="small">JPG, PNG, WEBP</span></div>
+          <input id="file" type="file" accept="image/*" hidden>
+          <div class="preview" id="preview"><img id="preview-img" alt=""><div><b id="preview-name"></b><div class="small" id="preview-size"></div></div><button class="ghost" id="clear" type="button">Clear</button></div>
+          <button class="primary" data-go="image">Analyze and search</button>
+        </div>
+        <div class="field" id="field-url">
+          <input id="url" type="url" placeholder="Paste Amazon, Flipkart, Myntra, Ajio product link">
+          <button class="primary" data-go="url">Find alternatives</button>
+        </div>
+        <div class="field" id="field-query">
+          <input id="query" type="text" placeholder="Nike Air Max white running shoes">
+          <button class="primary" data-go="query">Search live deals</button>
+        </div>
+        <div class="metrics">
+          <div class="metric"><span>Source</span><b id="m-source">--</b></div>
+          <div class="metric"><span>API results</span><b id="m-raw">--</b></div>
+          <div class="metric"><span>Time</span><b id="m-time">--</b></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="results">
+      <div class="topline">
+        <div><div class="title" id="r-title">Ready to search</div><div class="meta" id="r-meta">No mock data is shown. Add API keys in .env and search.</div></div>
+        <button class="ghost" id="new-search">New search</button>
+      </div>
+      <div class="loader" id="loader"><div class="spin"></div><b>Searching live shopping results...</b><div class="small">Vision, filtering, ranking, and deal comparison are running.</div></div>
+      <div id="notice" class="empty">Upload a product image, paste a URL, or enter a query to begin.</div>
+      <div class="grid" id="grid"></div>
+      <div class="compare" id="compare"></div>
+    </section>
+
+    <aside class="panel assistant">
+      <div class="pad">
+        <div class="eyebrow">AI assistant</div>
+        <h1 style="font-size:22px;margin-bottom:0">Ask about the results.</h1>
+      </div>
+      <div class="chatlog" id="chatlog"><div class="msg bot">Run a search, then ask things like "Which is best value?" or "Which is better for gaming?"</div></div>
+      <div class="chatbox">
+        <input id="chat" type="text" placeholder="Ask about these products">
+        <button class="primary" id="send">Ask</button>
+      </div>
+    </aside>
+  </main>
+</div>
+
+<script>
+const API = window.location.origin;
+let active = 'image';
+let imagePayload = null;
+let imageFile = null;
+let lastResults = [];
+let lastQuery = '';
+let chatHistory = [];
+
+document.querySelectorAll('.tab').forEach(btn => btn.addEventListener('click', () => setTab(btn.dataset.tab)));
+document.querySelectorAll('[data-go]').forEach(btn => btn.addEventListener('click', () => search(btn.dataset.go)));
+document.getElementById('new-search').addEventListener('click', () => document.querySelector('.left').scrollIntoView({behavior:'smooth'}));
+document.getElementById('send').addEventListener('click', ask);
+document.getElementById('chat').addEventListener('keydown', e => { if(e.key === 'Enter') ask(); });
+
+function setTab(tab){
+  active = tab;
+  document.querySelectorAll('.tab').forEach(b => b.classList.toggle('on', b.dataset.tab === tab));
+  document.querySelectorAll('.field').forEach(f => f.classList.toggle('on', f.id === 'field-' + tab));
+}
+
+const drop = document.getElementById('drop');
+const file = document.getElementById('file');
+drop.addEventListener('click', () => file.click());
+drop.addEventListener('dragover', e => { e.preventDefault(); drop.classList.add('drag'); });
+drop.addEventListener('dragleave', () => drop.classList.remove('drag'));
+drop.addEventListener('drop', e => { e.preventDefault(); drop.classList.remove('drag'); if(e.dataTransfer.files[0]) setFile(e.dataTransfer.files[0]); });
+file.addEventListener('change', e => { if(e.target.files[0]) setFile(e.target.files[0]); });
+document.getElementById('clear').addEventListener('click', clearImage);
+
+function setFile(f){
+  if(!f.type.startsWith('image/')) return showError('Please choose an image file.');
+  imageFile = f;
+  const reader = new FileReader();
+  reader.onload = e => {
+    imagePayload = e.target.result.split(',')[1];
+    document.getElementById('preview-img').src = e.target.result;
+    document.getElementById('preview-name').textContent = f.name;
+    document.getElementById('preview-size').textContent = (f.size/1024).toFixed(1) + ' KB';
+    document.getElementById('preview').style.display = 'flex';
+    drop.style.display = 'none';
+  };
+  reader.readAsDataURL(f);
+}
+
+function clearImage(){
+  imagePayload = null; imageFile = null; file.value = '';
+  document.getElementById('preview').style.display = 'none';
+  drop.style.display = 'block';
+}
+
+async function search(type){
+  const body = {};
+  if(type === 'image'){
+    if(!imagePayload) return showError('Upload a product image first.');
+    body.image = imagePayload; body.mime_type = imageFile.type;
+  }
+  if(type === 'url'){
+    const url = document.getElementById('url').value.trim();
+    if(!url) return showError('Paste a product URL first.');
+    body.url = url;
+  }
+  if(type === 'query'){
+    const query = document.getElementById('query').value.trim();
+    if(!query) return showError('Enter a product query first.');
+    body.query = query;
+  }
+  setLoading(true);
+  try{
+    const res = await fetch(API + '/search', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)});
+    const data = await res.json().catch(() => ({}));
+    if(!res.ok || data.error) throw new Error(data.error || 'Search failed.');
+    render(data);
+  }catch(err){
+    showError(err.message || String(err));
+  }finally{
+    setLoading(false);
+  }
+}
+
+function render(data){
+  lastResults = data.results || [];
+  lastQuery = data.search_query || data.query || '';
+  chatHistory = [];
+  document.getElementById('r-title').textContent = lastQuery ? 'Results for "' + lastQuery + '"' : 'Results';
+  document.getElementById('r-meta').textContent = `${lastResults.length} ranked products from ${data.source}.`;
+  document.getElementById('m-source').textContent = data.source || '--';
+  document.getElementById('m-raw').textContent = data.meta?.raw_count ?? lastResults.length;
+  document.getElementById('m-time').textContent = data.meta?.elapsed_ms ? data.meta.elapsed_ms + ' ms' : '--';
+  document.getElementById('notice').style.display = lastResults.length ? 'none' : 'block';
+  document.getElementById('notice').textContent = lastResults.length ? '' : 'No relevant products with image, price, and direct link were returned.';
+  document.getElementById('grid').innerHTML = lastResults.map(card).join('');
+  renderCompare(lastResults.slice(0,5));
+  resetChat();
+}
+
+function card(p, i){
+  const isOriginal = i === 0 && p.availability === 'original pasted product';
+  const price = Number(p.price || 0);
+  return `<article class="card">
+    <div class="image">${p.image_url ? `<img src="${esc(p.image_url)}" alt="${esc(p.title)}" loading="lazy">` : '<span class="small">No image found</span>'}</div>
+    <div class="body">
+      <div class="row"><span class="badge ${isOriginal ? 'original' : ''}">${isOriginal ? 'Original URL' : esc(p.source || 'seller')}</span><span class="badge ${i===0 && !isOriginal ? 'best' : ''}">${i===0 && !isOriginal ? 'Best deal' : '#'+(i+1)}</span></div>
+      <div class="name">${esc(p.title)}</div>
+      <div><div class="price">${price ? 'Rs ' + price.toLocaleString('en-IN') : 'Price unavailable'}</div><div class="small">${p.rating ? p.rating + ' rating' : 'Rating unavailable'}${p.reviews_count ? ' · ' + Number(p.reviews_count).toLocaleString('en-IN') + ' reviews' : ''}</div></div>
+      <div class="scores"><div class="score">Match<b>${pct(p.relevance_score)}</b></div><div class="score">Price<b>${pct(p.price_score)}</b></div><div class="score">Trust<b>${pct(p.trust_score)}</b></div></div>
+      <a class="view" target="_blank" rel="noopener" href="${esc(p.product_link)}">Open product</a>
+    </div>
+  </article>`;
+}
+
+function renderCompare(products){
+  const box = document.getElementById('compare');
+  if(!products.length){ box.innerHTML = ''; return; }
+  box.innerHTML = `<table><thead><tr><th>Rank</th><th>Product</th><th>Price</th><th>Rating</th><th>Source</th></tr></thead><tbody>${products.map((p,i) =>
+    `<tr><td>#${i+1}</td><td>${esc(p.title)}</td><td>${p.price ? 'Rs ' + Number(p.price).toLocaleString('en-IN') : '--'}</td><td>${p.rating || '--'}</td><td>${esc(p.source || '--')}</td></tr>`
+  ).join('')}</tbody></table>`;
+}
+
+async function ask(){
+  const input = document.getElementById('chat');
+  const message = input.value.trim();
+  if(!message) return;
+  if(!lastResults.length) return addMsg('bot', 'Run a search first so I can compare real products.');
+  input.value = '';
+  addMsg('user', message);
+  try{
+    const res = await fetch(API + '/assistant', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({message, query:lastQuery, products:lastResults, history:chatHistory})});
+    const data = await res.json();
+    if(!res.ok || data.error) throw new Error(data.error || 'Assistant failed.');
+    addMsg('bot', data.reply);
+  }catch(err){ addMsg('bot', err.message || String(err)); }
+}
+
+function resetChat(){
+  document.getElementById('chatlog').innerHTML = '';
+  addMsg('bot', lastResults.length ? 'I can compare these live results. Ask for best value, budget pick, premium pick, gaming use, or which listing looks safest.' : 'Run a search, then ask about the results.');
+}
+function addMsg(role, text){
+  chatHistory.push({role, content:text});
+  const el = document.createElement('div');
+  el.className = 'msg ' + (role === 'user' ? 'user' : 'bot');
+  el.textContent = text;
+  document.getElementById('chatlog').appendChild(el);
+  el.scrollIntoView({block:'end'});
+}
+function showError(text){
+  document.getElementById('notice').className = 'error';
+  document.getElementById('notice').style.display = 'block';
+  document.getElementById('notice').textContent = text;
+}
+function setLoading(on){
+  document.getElementById('loader').style.display = on ? 'block' : 'none';
+  if(on){ document.getElementById('notice').style.display = 'none'; document.getElementById('grid').innerHTML = ''; document.getElementById('compare').innerHTML = ''; }
+  document.querySelectorAll('.primary').forEach(b => b.disabled = on);
+}
+function esc(v){return String(v ?? '').replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s]));}
+function pct(v){return Math.round(Number(v || 0) * 100) + '%';}
+</script>
+</body>
+</html>
