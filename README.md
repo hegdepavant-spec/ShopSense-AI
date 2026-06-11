@@ -1,3 +1,11 @@
+---
+title: ShopSense AI
+emoji: 🛒
+colorFrom: blue
+colorTo: green
+sdk: docker
+pinned: false
+---
 # ShopSense AI
 
 ShopSense AI is a Flask-powered visual shopping assistant: product image search, product URL alternatives, text search, real-time deal ranking, and an AI chat panel.
