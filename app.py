@@ -75,5 +75,4 @@ def create_app():
 
 if __name__ == "__main__":
     app = create_app()
-    print("ShopSense AI -> http://localhost:5000\n")
-    app.run(port=5000, debug=True)
+    app.run(host="0.0.0.0", port=7860)
